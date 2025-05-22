@@ -1,9 +1,11 @@
 Spring Boot-based Java application designed to demonstrate a simple payment request management system.
+
+
 Project Structure
 The project follows a standard Maven directory structure.
 
-Technologies Used
 
+Technologies Used
 Java 21: Core programming language.
 Spring Boot: Framework for building the REST API.
 Spring Data JPA: For database interactions.
@@ -11,6 +13,7 @@ MySQL: Relational database for JPA persistence.
 JWT-based Authentication: Secures API endpoints using JSON Web Tokens.
 MapStruct: For entity-to-DTO and DTO-to-entity mapping.
 Lombok: For reducing boilerplate code with annotations.
+
 
 Dependencies
 The following dependencies are used in the project (defined in pom.xml):
