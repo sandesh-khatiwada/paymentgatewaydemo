@@ -3,6 +3,7 @@ package com.sandesh.paymentgatewaydemo.service;
 
 import com.sandesh.paymentgatewaydemo.entity.Otp;
 import com.sandesh.paymentgatewaydemo.entity.User;
+import com.sandesh.paymentgatewaydemo.exception.InvalidOTPException;
 import com.sandesh.paymentgatewaydemo.repository.OtpRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
@@ -64,6 +65,14 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public ResponseEntity<ApiResponse<Void>> verifyOtp(String otp) {
+
+        if (otp == null || otp.trim().isEmpty()) {
+            throw new InvalidOTPException("OTP cannot be null or empty");
+        }
+        if (!otp.matches("\\d{6}")) {
+            throw new InvalidOTPException("OTP must be exactly 6 digits");
+        }
+
         String email = getEmailFromJwt();
 
 
@@ -72,8 +81,9 @@ public class OtpServiceImpl implements OtpService {
 
 
         if (storedOtp.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
-            storedOtp.setHasExpired(true);
-            otpRepository.save(storedOtp);
+//            storedOtp.setHasExpired(true);
+//            otpRepository.save(storedOtp);
+            otpRepository.delete(storedOtp);
             throw new IllegalArgumentException("OTP has expired for email: " + email);
         }
 
@@ -81,9 +91,8 @@ public class OtpServiceImpl implements OtpService {
             throw new IllegalArgumentException("Invalid OTP for email: " + email);
         }
 
+        otpRepository.delete(storedOtp);
 
-        storedOtp.setHasExpired(true);
-        otpRepository.save(storedOtp);
 
         ApiResponse<Void> response = new ApiResponse<>(
                 HttpStatus.OK,

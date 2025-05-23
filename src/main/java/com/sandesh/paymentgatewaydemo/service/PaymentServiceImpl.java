@@ -37,7 +37,7 @@ public class PaymentServiceImpl implements PaymentService{
         }
 
         PaymentRequestDTO responseDTO = paymentRequestMapper.toDTO(paymentRequest);
-//        paymentResponseDTO.setRedirectUrl("https://payment-gateway.example.com/checkout/" + paymentRequest.getId());
+
 
         ApiResponse<PaymentRequestDTO> response = new ApiResponse<>(
                 HttpStatus.OK,

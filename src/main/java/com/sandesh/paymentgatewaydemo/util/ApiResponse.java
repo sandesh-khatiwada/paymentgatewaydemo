@@ -67,7 +67,7 @@ public class ApiResponse<T> {
 
     // Response with redirection URL for success
     public ApiResponse(HttpStatus status, String message, String successURL, String failureURL) {
-        this.success = false;
+        this.success = true;
         this.status = status;
         this.message = message;
         Map<String, String> redirectData = new HashMap<>();

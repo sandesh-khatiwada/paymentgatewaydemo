@@ -3,7 +3,6 @@ package com.sandesh.paymentgatewaydemo.mapper;
 
 import com.sandesh.paymentgatewaydemo.dto.PaymentRequestDTO;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
-import com.sandesh.paymentgatewaydemo.enums.AppId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

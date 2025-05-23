@@ -4,8 +4,9 @@ import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.entity.Transaction;
 import com.sandesh.paymentgatewaydemo.entity.User;
 import com.sandesh.paymentgatewaydemo.enums.Status;
-import com.sandesh.paymentgatewaydemo.exception.InvalidPaymentRequestException;
 import com.sandesh.paymentgatewaydemo.exception.InvalidTransactionRequestException;
+import com.sandesh.paymentgatewaydemo.exception.UnverifiedOtpException;
+import com.sandesh.paymentgatewaydemo.repository.OtpRepository;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.TransactionRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
@@ -28,22 +29,29 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final PaymentRequestRepository paymentRequestRepository;
     private final UserRepository userRepository;
+    private final OtpRepository otpRepository;
 
     @Override
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, String>>> addTransaction(String refId) {
-        // Extract email from JWT token
+
         String email = getEmailFromJwt();
 
-        // Find user by email
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
 
-        // Find payment request by refId
+
+        otpRepository.findByUser(user)
+                .ifPresent(otp -> {
+                    throw new UnverifiedOtpException("OTP verification pending. Please verify OTP before adding a transaction.");
+                });
+
+
         PaymentRequest paymentRequest = paymentRequestRepository.findByRefId(refId)
                 .orElseThrow(() -> new IllegalArgumentException("Transaction request not found for refId: " + refId));
 
-        // Validate payment request
+
         if (paymentRequest.getAmount() <= 0) {
             paymentRequest.setStatus(Status.FAILED);
             paymentRequestRepository.save(paymentRequest);
@@ -56,7 +64,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new InvalidTransactionRequestException("Invalid Particular: " + paymentRequest.getParticular());
         }
 
-        // Check sufficient balance
+
         double newBalance = user.getBalance() - paymentRequest.getAmount();
         if (newBalance < 0) {
             paymentRequest.setStatus(Status.FAILED);
@@ -64,11 +72,11 @@ public class TransactionServiceImpl implements TransactionService {
             throw new InvalidTransactionRequestException("Insufficient balance: " + user.getBalance());
         }
 
-        // Update user balance
+
         user.setBalance(newBalance);
         userRepository.save(user);
 
-        // Create transaction
+
         Transaction transaction = new Transaction();
         transaction.setDebitStatus(Status.SUCCESS);
 
@@ -80,14 +88,17 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setStatus(Status.SUCCESS);
         transaction.setAmount(paymentRequest.getAmount());
 
-        // Save transaction
+
+
+
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        // Update payment request status
+
+
         paymentRequest.setStatus(Status.SUCCESS);
         paymentRequestRepository.save(paymentRequest);
 
-        // Prepare response
+
         Map<String, String> responseData = new HashMap<>();
         responseData.put("transactionId", savedTransaction.getId().toString());
         responseData.put("status", savedTransaction.getStatus().toString());

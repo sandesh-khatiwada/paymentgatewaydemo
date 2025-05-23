@@ -6,10 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.security.InvalidKeyException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -91,7 +94,44 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-//    public ApiResponse(HttpStatus status, String message, String successURL, String failureURL, List<String> errors)
+    @ExceptionHandler(InvalidOTPException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidOTPException(InvalidOTPException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST,
+                "Invalid One Time Password",
+                Collections.singletonList(ex.getMessage())
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        List<String> errors = new ArrayList<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.add(error.getField() + ": " + error.getDefaultMessage());
+        }
+
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST,
+                "Validation Failed",
+                errors
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+
+    @ExceptionHandler(UnverifiedOtpException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUnverifiedOtpException(UnverifiedOtpException ex) {
+
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST,
+                "OTP has not been verified.",
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+
 
     //  RuntimeException
     @ExceptionHandler(RuntimeException.class)
