@@ -16,6 +16,7 @@ import java.util.Map;
 public class ApiResponse<T> {
     private Boolean success;
     private HttpStatus status;
+    private String code;
     private String message;
     private T data;
     private List<String> errors;
@@ -25,6 +26,7 @@ public class ApiResponse<T> {
     public ApiResponse(HttpStatus status, String message, T data) {
         this.success = true;
         this.status = status;
+        this.code="000";
         this.message = message;
         this.data = data;
         this.errors = null;
@@ -35,6 +37,7 @@ public class ApiResponse<T> {
     public ApiResponse(HttpStatus status, String message) {
         this.success = true;
         this.status = status;
+        this.code = "000";
         this.message = message;
         this.data = null;
         this.errors = null;
@@ -42,8 +45,9 @@ public class ApiResponse<T> {
     }
 
     // Error response constructor
-    public ApiResponse(HttpStatus status, String message, List<String> errors) {
+    public ApiResponse(HttpStatus status, String code, String message, List<String> errors) {
         this.success = false;
+        this.code = code;
         this.status = status;
         this.message = message;
         this.data = null;
@@ -53,9 +57,10 @@ public class ApiResponse<T> {
 
     // Response with redirection URL for failure
     @SuppressWarnings("unchecked")
-    public ApiResponse(HttpStatus status, String message, String successURL, String failureURL, List<String> errors) {
+    public ApiResponse(HttpStatus status, String code, String message, String successURL, String failureURL, List<String> errors) {
         this.success = false;
         this.status = status;
+        this.code = code;
         this.message = message;
         Map<String, String> redirectData = new HashMap<>();
         redirectData.put("successURL", successURL);
@@ -69,6 +74,7 @@ public class ApiResponse<T> {
     public ApiResponse(HttpStatus status, String message, String successURL, String failureURL) {
         this.success = true;
         this.status = status;
+        this.code = "000";
         this.message = message;
         Map<String, String> redirectData = new HashMap<>();
         redirectData.put("successURL", successURL);

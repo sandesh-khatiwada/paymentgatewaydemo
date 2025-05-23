@@ -81,9 +81,9 @@ public class OtpServiceImpl implements OtpService {
 
 
         if (storedOtp.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
-            storedOtp.setHasExpired(true);
-            otpRepository.save(storedOtp);
-//            otpRepository.delete(storedOtp);
+//            storedOtp.setHasExpired(true);
+//            otpRepository.save(storedOtp);
+            otpRepository.delete(storedOtp);
             throw new IllegalArgumentException("OTP has expired for email: " + email);
         }
 

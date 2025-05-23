@@ -19,33 +19,36 @@ import java.util.List;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // BadCredentialsException (for invalid username/password)
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Object>> handleBadCredentialsException(BadCredentialsException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.UNAUTHORIZED,
+                "AUTH001",
                 "Invalid username or password",
                 Collections.singletonList(ex.getMessage())
         );
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
-    //  HttpMessageNotReadableException (for malformed/invalid request body)
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Object>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
+                "VAL001",
                 "Invalid request body",
                 Collections.singletonList(ex.getMessage())
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // InvalidKeyException (For invalid JWT secret key)
+
     @ExceptionHandler(InvalidKeyException.class)
     public ResponseEntity<ApiResponse<Object>> handleInvalidKeyException(InvalidKeyException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.INTERNAL_SERVER_ERROR,
+                "AUTH001 ",
                 "Invalid JWT secret key configuration",
                 Collections.singletonList(ex.getMessage())
         );
@@ -56,6 +59,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
+                "E007",
                 "Invalid request",
                Collections.singletonList(ex.getMessage())
         );
@@ -66,6 +70,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleInvalidPaymentRequestException(InvalidPaymentRequestException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
+                "E007 ",
                 "Invalid Payment Request",
                 Collections.singletonList(ex.getMessage())
         );
@@ -76,6 +81,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
+                "E007",
                 "The request is not valid",
                 Collections.singletonList(ex.getMessage())
         );
@@ -87,6 +93,7 @@ public class GlobalExceptionHandler {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
                 "The transaction failed",
+                "E006",
                 "/success",
                 "/failed",
                 Collections.singletonList(ex.getMessage())
@@ -98,6 +105,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleInvalidOTPException(InvalidOTPException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
+                "AUTH001",
                 "Invalid One Time Password",
                 Collections.singletonList(ex.getMessage())
         );
@@ -113,6 +121,7 @@ public class GlobalExceptionHandler {
 
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
+                "E007",
                 "Validation Failed",
                 errors
         );
@@ -123,10 +132,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnverifiedOtpException.class)
     public ResponseEntity<ApiResponse<Object>> handleUnverifiedOtpException(UnverifiedOtpException ex) {
 
+        List<String> errors = new ArrayList<>();
+        errors.add(ex.getMessage());
+
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST,
+                "AUTH001",
                 "OTP has not been verified.",
-                ex.getMessage()
+                errors
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -138,6 +151,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.NOT_FOUND,
+                "E404",
                 "Resource not found",
                 Collections.singletonList(ex.getMessage())
         );
@@ -149,6 +163,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Object>> handleGeneralException(Exception ex) {
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.INTERNAL_SERVER_ERROR,
+                "E500",
                 "An unexpected error occurred",
                 Collections.singletonList(ex.getMessage())
         );
