@@ -28,13 +28,16 @@ public class PaymentServiceImpl implements PaymentService{
 
         if(paymentRequest.getAmount()<=0){
             paymentRequest.setStatus(Status.FAILED);
+            paymentRequestRepository.save(paymentRequest);
             throw new InvalidPaymentRequestException("Invalid Amount: "+paymentRequest.getAmount());
         }
 
         if(paymentRequest.getParticular().isEmpty()){
             paymentRequest.setStatus(Status.FAILED);
+            paymentRequestRepository.save(paymentRequest);
             throw new InvalidPaymentRequestException("Invalid Particular: "+paymentRequest.getParticular());
         }
+
 
         PaymentRequestDTO responseDTO = paymentRequestMapper.toDTO(paymentRequest);
 

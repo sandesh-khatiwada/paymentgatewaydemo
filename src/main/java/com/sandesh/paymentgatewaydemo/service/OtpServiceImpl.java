@@ -67,10 +67,10 @@ public class OtpServiceImpl implements OtpService {
     public ResponseEntity<ApiResponse<Void>> verifyOtp(String otp) {
 
         if (otp == null || otp.trim().isEmpty()) {
-            throw new InvalidOTPException("OTP cannot be null or empty");
+            throw new InvalidOTPException("Invalid OTP");
         }
         if (!otp.matches("\\d{6}")) {
-            throw new InvalidOTPException("OTP must be exactly 6 digits");
+            throw new InvalidOTPException("Invalid OTP");
         }
 
         String email = getEmailFromJwt();
@@ -81,9 +81,9 @@ public class OtpServiceImpl implements OtpService {
 
 
         if (storedOtp.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
-//            storedOtp.setHasExpired(true);
-//            otpRepository.save(storedOtp);
-            otpRepository.delete(storedOtp);
+            storedOtp.setHasExpired(true);
+            otpRepository.save(storedOtp);
+//            otpRepository.delete(storedOtp);
             throw new IllegalArgumentException("OTP has expired for email: " + email);
         }
 
