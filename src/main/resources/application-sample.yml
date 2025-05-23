@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: paymentgatewaydemo
+  datasource:
+    url:
+    username:
+    password:
+    driver-class-name:
+  jpa:
+    hibernate:
+      ddl-auto:
+    show-sql:
+    properties:
+      hibernate:
+        dialect:
+        format_sql:
+  mail:
+    host:
+    port:
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth:
+          starttls:
+            enable:
+
+jwt:
+  secret:
+  token-expiration:
+
+logging:
+  level:
+    org.hibernate.SQL:
