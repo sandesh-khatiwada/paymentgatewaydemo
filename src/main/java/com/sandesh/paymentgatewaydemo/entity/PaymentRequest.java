@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "payment_request")
+@Table(name = "payment")
 public class PaymentRequest {
 
     @Id
@@ -34,7 +34,20 @@ public class PaymentRequest {
     @Column(name = "remarks")
     private String remarks;
 
+    @Column(name = "debit_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status debitStatus;
+
+    @Column(name = "credit_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status creditStatus;
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = true)
+    private User user;
+
 }

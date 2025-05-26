@@ -27,7 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // The endpoints listed below won't have jwt filter
     private static final List<String> PUBLIC_ENDPOINTS = List.of(
-            "/api/auth/login"
+            "/api/auth/login",
+            "/api/ecom/checkout"
     );
 
     @Override

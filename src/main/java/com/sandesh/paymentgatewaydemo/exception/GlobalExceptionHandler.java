@@ -66,6 +66,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(InvalidAccessException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidAccessException(InvalidAccessException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST,
+                "E007 ",
+                "Invalid Request",
+                Collections.singletonList(ex.getMessage())
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+
     @ExceptionHandler(InvalidPaymentRequestException.class)
     public ResponseEntity<ApiResponse<Object>> handleInvalidPaymentRequestException(InvalidPaymentRequestException ex) {
         ApiResponse<Object> response = new ApiResponse<>(

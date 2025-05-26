@@ -9,4 +9,7 @@ import lombok.Data;
 public class OtpRequestDTO {
     @NotBlank(message = "OTP is required")
     private String otp;
+
+    @NotBlank(message = "Transaction reference is required")
+    private String refId;
 }

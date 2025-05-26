@@ -32,6 +32,10 @@ public class Otp {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     private User user;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="ref_id", referencedColumnName ="ref_id", nullable=false)
+    private PaymentRequest paymentRequest;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

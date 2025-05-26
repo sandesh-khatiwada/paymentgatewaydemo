@@ -2,6 +2,7 @@ package com.sandesh.paymentgatewaydemo.controller;
 
 import com.sandesh.paymentgatewaydemo.dto.TransactionRequestDTO;
 import com.sandesh.paymentgatewaydemo.service.TransactionService;
+import com.sandesh.paymentgatewaydemo.service.npi.NPIService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,10 +19,13 @@ import java.util.Map;
 @AllArgsConstructor
 public class TransactionController {
 
-    TransactionService transactionService;
+    NPIService npiService;
 
-    @PostMapping("/transaction")
+    @PostMapping("/payment/process")
     public ResponseEntity<ApiResponse<Map<String,String>>> addTransaction(@Valid @RequestBody TransactionRequestDTO transactionRequestDTO){
-        return transactionService.addTransaction(transactionRequestDTO.getRefId());
+//        return transactionService.addTransaction(transactionRequestDTO.getRefId());
+        return npiService.validateTransaction(transactionRequestDTO.getRefId());
     }
+
+
 }

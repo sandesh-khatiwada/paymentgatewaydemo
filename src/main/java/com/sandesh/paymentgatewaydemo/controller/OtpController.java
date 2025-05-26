@@ -1,5 +1,6 @@
 package com.sandesh.paymentgatewaydemo.controller;
 
+import com.sandesh.paymentgatewaydemo.dto.AccessRequestDTO;
 import com.sandesh.paymentgatewaydemo.dto.OtpRequestDTO;
 import com.sandesh.paymentgatewaydemo.service.OtpService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
@@ -15,16 +16,23 @@ import org.springframework.web.bind.annotation.*;
 public class OtpController {
     private final OtpService otpService;
 
+
+    @GetMapping("/otp/{refId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<String>> validateAccess(@PathVariable String refId){
+        return otpService.validateAccess(refId);
+    }
+
     @PostMapping("/otp")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Void>> sendOtp() {
-        return otpService.sendOtp();
+    public ResponseEntity<ApiResponse<Void>> sendOtp(@RequestBody AccessRequestDTO accessRequestDTO) {
+        return otpService.sendOtp(accessRequestDTO.getRefId());
     }
 
     @PostMapping("/otp/verification")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> verifyOtp(@Valid @RequestBody OtpRequestDTO otpRequestDTO) {
-        return otpService.verifyOtp(otpRequestDTO.getOtp());
+        return otpService.verifyOtp(otpRequestDTO.getOtp(), otpRequestDTO.getRefId());
     }
 
 

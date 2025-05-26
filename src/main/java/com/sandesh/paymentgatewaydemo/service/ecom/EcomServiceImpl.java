@@ -1,5 +1,5 @@
 
-package com.sandesh.paymentgatewaydemo.service;
+package com.sandesh.paymentgatewaydemo.service.ecom;
 
 import com.sandesh.paymentgatewaydemo.dto.PaymentRequestDTO;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
@@ -26,11 +26,18 @@ public class EcomServiceImpl implements EcomService {
         try {
             PaymentRequest paymentRequest = paymentRequestMapper.toEntity(paymentRequestDTO);
             paymentRequest.setStatus(Status.PENDING);
+            paymentRequest.setCreditStatus(Status.PENDING);
+            paymentRequest.setDebitStatus(Status.PENDING);
+
             paymentRequest.setRefId(UUID.randomUUID().toString());
+
 
             PaymentRequest savedPaymentRequest = paymentRequestRepository.save(paymentRequest);
 
             PaymentRequestDTO paymentResponseDTO = paymentRequestMapper.toDTO(savedPaymentRequest);
+
+            String redirectURL = "/api/auth/login/"+paymentResponseDTO.getRefId();
+            paymentResponseDTO.setRedirectURL(redirectURL);
 
             ApiResponse<PaymentRequestDTO> response = new ApiResponse<>(
                     HttpStatus.OK,
