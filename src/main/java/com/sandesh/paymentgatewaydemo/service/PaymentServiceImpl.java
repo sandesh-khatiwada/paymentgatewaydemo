@@ -6,18 +6,24 @@ import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidPaymentRequestException;
 import com.sandesh.paymentgatewaydemo.mapper.PaymentRequestMapper;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
+import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
+import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 
 @AllArgsConstructor
 @Service
 public class PaymentServiceImpl implements PaymentService{
 
     private final PaymentRequestRepository paymentRequestRepository;
+    private final UserRepository userRepository;
     private final PaymentRequestMapper paymentRequestMapper;
+    private final PaymentRequestAccessValidator paymentRequestAccessValidator;
+
 
     @Override
     public ResponseEntity<ApiResponse<PaymentRequestDTO>> getPaymentRequest(String refId) {
@@ -25,6 +31,9 @@ public class PaymentServiceImpl implements PaymentService{
         PaymentRequest paymentRequest = paymentRequestRepository.findByRefId(refId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment request not found for refId: " + refId));
 
+        String userEmail = EmailExtractorUtil.getEmailFromJwt();
+
+        paymentRequestAccessValidator.isPaymentRequestAccessValid(userEmail,refId);
 
         if(paymentRequest.getAmount()<=0){
             paymentRequest.setStatus(Status.FAILED);

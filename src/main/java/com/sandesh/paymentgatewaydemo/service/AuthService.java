@@ -7,5 +7,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
      ResponseEntity<ApiResponse<LoginResponse>> login(LoginRequest loginRequest);
-     public ResponseEntity<ApiResponse<String>> validateAccess( String refId);
+      ResponseEntity<ApiResponse<String>> validateAccess( String refId);
 }

@@ -6,21 +6,18 @@ import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.entity.User;
 import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidAccessException;
-import com.sandesh.paymentgatewaydemo.exception.InvalidLoginException;
 import com.sandesh.paymentgatewaydemo.exception.InvalidOTPException;
-import com.sandesh.paymentgatewaydemo.exception.InvalidTransactionRequestException;
 import com.sandesh.paymentgatewaydemo.repository.OtpRepository;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
+import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -36,6 +33,8 @@ public class OtpServiceImpl implements OtpService {
     private final OtpRepository otpRepository;
     private final UserRepository userRepository;
     private final PaymentRequestRepository paymentRequestRepository;
+    private final PaymentRequestAccessValidator paymentRequestAccessValidator;
+
 
     public ResponseEntity<ApiResponse<String>> validateAccess( String refId) {
         // Validate refId and transaction
@@ -45,9 +44,7 @@ public class OtpServiceImpl implements OtpService {
 
         Optional<PaymentRequest> optionalPaymentRequest = paymentRequestRepository.findByRefId(refId);
         if (!optionalPaymentRequest.isPresent()) {
-
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
-
         }
 
         PaymentRequest paymentRequest = optionalPaymentRequest.get();
@@ -56,6 +53,9 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
 
         }
+
+        paymentRequestAccessValidator.isPaymentRequestAccessValid(EmailExtractorUtil.getEmailFromJwt(),refId);
+
 
 
         return ResponseEntity.ok(new ApiResponse<>(
@@ -86,11 +86,14 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        String email = getEmailFromJwt();
+        String email =EmailExtractorUtil.getEmailFromJwt();
 
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+
+
+        paymentRequestAccessValidator.isPaymentRequestAccessValid(email,refId);
 
 
         String otpValue = generateOtp();
@@ -150,7 +153,10 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidOTPException("Invalid OTP");
         }
 
-        String email = getEmailFromJwt();
+        String email = EmailExtractorUtil.getEmailFromJwt();
+
+
+        paymentRequestAccessValidator.isPaymentRequestAccessValid(email,refId);
 
 
         Otp storedOtp = otpRepository.findByUserEmailAndPaymentRequestRefIdAndHasExpiredFalse(email,refId)
@@ -158,8 +164,7 @@ public class OtpServiceImpl implements OtpService {
 
 
         if (storedOtp.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
-//            storedOtp.setHasExpired(true);
-//            otpRepository.save(storedOtp);
+
             otpRepository.delete(storedOtp);
             throw new IllegalArgumentException("OTP has expired for email: " + email);
         }
@@ -182,13 +187,6 @@ public class OtpServiceImpl implements OtpService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    private String getEmailFromJwt() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            return ((UserDetails) principal).getUsername(); // Email is in 'sub'
-        }
-        throw new IllegalStateException("User not authenticated or invalid principal");
-    }
 
     private String generateOtp() {
         SecureRandom random = new SecureRandom();
