@@ -37,6 +37,9 @@ public class NPIServiceImpl implements NPIService {
           User user =userRepository.findByEmail(email).get();
           PaymentRequest paymentRequest = paymentRequestRepository.findByRefId(refId).get();
 
+          User merchant = userRepository.findByEmail("merchant@gmail.com").get();
+
+
           if(paymentRequest.getStatus().equals(Status.SUCCESS)){
                throw new InvalidTransactionRequestException("Transaction with the provided refId has already been completed");
           }
@@ -48,25 +51,29 @@ public class NPIServiceImpl implements NPIService {
           if (paymentRequest.getAmount() <= 0) {
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
-               throw new InvalidTransactionRequestException("Invalid Amount: " + paymentRequest.getAmount());
+               throw new InvalidTransactionRequestException("Invalid Amount: Rs." + paymentRequest.getAmount());
           }
 
-          double newBalance = user.getBalance() - paymentRequest.getAmount();
-          if (newBalance < 0) {
+          double newUserBalance = user.getBalance() - paymentRequest.getAmount();
+          if (newUserBalance < 0) {
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
-               throw new InvalidTransactionRequestException("Insufficient balance: " + user.getBalance());
+               throw new InvalidTransactionRequestException("Insufficient balance: Rs." + user.getBalance());
           }
 
           paymentRequest.setStatus(Status.SUCCESS);
 
-          user.setBalance(newBalance);
+          user.setBalance(newUserBalance);
           userRepository.save(user);
 
           paymentRequest.setDebitStatus(Status.SUCCESS);
 
 
+          double newMerchantBalance = merchant.getBalance() + paymentRequest.getAmount();
+
           // Credit process
+          merchant.setBalance(newMerchantBalance);
+          userRepository.save(merchant);
           paymentRequest.setCreditStatus(Status.SUCCESS);
           paymentRequest.setStatus(Status.SUCCESS);
 

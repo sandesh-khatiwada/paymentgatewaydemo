@@ -9,7 +9,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface OtpRepository extends JpaRepository<Otp,Long> {
+
     Optional<Otp> findByUserEmailAndHasExpiredTrue(String email);
+    Optional<Otp> findByUserEmail(String email);
+
     Optional<Otp> findByUser(User user);
 
     @Query("SELECT o FROM Otp o " +

@@ -107,7 +107,7 @@ public class OtpServiceImpl implements OtpService {
 
 
         //delete expired past OTP of the user
-        Optional<Otp> existingOTP= otpRepository.findByUserEmailAndHasExpiredTrue(email);
+        Optional<Otp> existingOTP= otpRepository.findByUserEmail(email);
         existingOTP.ifPresent(otpRepository::delete);
 
 
