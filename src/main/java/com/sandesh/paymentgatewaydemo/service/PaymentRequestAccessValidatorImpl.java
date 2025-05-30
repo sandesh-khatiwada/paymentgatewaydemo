@@ -19,14 +19,19 @@ public class PaymentRequestAccessValidatorImpl implements PaymentRequestAccessVa
 
     private final UserRepository userRepository;
     private final PaymentRequestRepository paymentRequestRepository;
+    private final PaymentCacheService paymentCacheService;
 
     @Override
     public boolean isPaymentRequestAccessValid(String email, String refId){
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
 
-        PaymentRequest paymentRequest = paymentRequestRepository.findByRefId(refId)
-                .orElseThrow(() -> new IllegalArgumentException("Transaction request not found for refId: " + refId));
+
+        PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
+
+        if(paymentRequest==null){
+            throw new InvalidAccessException("Transaction request not found for refId: "+refId);
+        }
 
         if(!Objects.equals(user.getId(),paymentRequest.getUser().getId())){
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");

@@ -3,10 +3,9 @@ package com.sandesh.paymentgatewaydemo.service;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidAccessException;
-import com.sandesh.paymentgatewaydemo.exception.InvalidLoginException;
-import com.sandesh.paymentgatewaydemo.exception.InvalidTransactionRequestException;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
+import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import com.sandesh.paymentgatewaydemo.util.JwtUtil;
 import com.sandesh.paymentgatewaydemo.dto.LoginRequest;
 import com.sandesh.paymentgatewaydemo.dto.LoginResponse;
@@ -22,7 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+
 
 @Service
 @AllArgsConstructor
@@ -32,8 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final CustomUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private final PaymentRequestRepository paymentRequestRepository;
-
+    private final PaymentCacheService paymentCacheService;
 
     public ResponseEntity<ApiResponse<LoginResponse>> login(LoginRequest loginRequest) {
 
@@ -43,13 +41,14 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        Optional<PaymentRequest> optionalPaymentRequest = paymentRequestRepository.findByRefId(refId);
-        if (!optionalPaymentRequest.isPresent()) {
-            throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
+        PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
 
+        if (paymentRequest == null) {
+            throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        PaymentRequest paymentRequest = optionalPaymentRequest.get();
+
+
         if (!paymentRequest.getStatus().equals(Status.PENDING)) {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
@@ -72,7 +71,8 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         paymentRequest.setUser(user);
-        paymentRequestRepository.save(paymentRequest);
+        paymentCacheService.cachePaymentRequest(paymentRequest);
+
 
         LoginResponse loginResponse= new LoginResponse(jwt, user.getUsername(), user.getEmail());
 
@@ -92,14 +92,16 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        Optional<PaymentRequest> optionalPaymentRequest = paymentRequestRepository.findByRefId(refId);
-        if (!optionalPaymentRequest.isPresent()) {
+
+
+        PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
+        if (paymentRequest == null) {
 
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
 
         }
 
-        PaymentRequest paymentRequest = optionalPaymentRequest.get();
+
         if (!paymentRequest.getStatus().equals(Status.PENDING)) {
 
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
@@ -113,6 +115,8 @@ public class AuthServiceImpl implements AuthService {
                 null
         ));
     }
+
+
 
 
 }

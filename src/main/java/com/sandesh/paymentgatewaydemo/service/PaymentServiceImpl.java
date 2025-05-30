@@ -23,13 +23,17 @@ public class PaymentServiceImpl implements PaymentService{
     private final UserRepository userRepository;
     private final PaymentRequestMapper paymentRequestMapper;
     private final PaymentRequestAccessValidator paymentRequestAccessValidator;
+    private final PaymentCacheService paymentCacheService;
 
 
     @Override
     public ResponseEntity<ApiResponse<PaymentRequestDTO>> getPaymentRequest(String refId) {
 
-        PaymentRequest paymentRequest = paymentRequestRepository.findByRefId(refId)
-                .orElseThrow(() -> new IllegalArgumentException("Payment request not found for refId: " + refId));
+        PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
+
+        if(paymentRequest==null){
+            throw new IllegalArgumentException("Payment request not found for refId : "+refId);
+        }
 
         String userEmail = EmailExtractorUtil.getEmailFromJwt();
 

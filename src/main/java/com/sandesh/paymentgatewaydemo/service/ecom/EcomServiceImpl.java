@@ -6,11 +6,14 @@ import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.mapper.PaymentRequestMapper;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
+import com.sandesh.paymentgatewaydemo.service.PaymentCacheService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
+import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 
 import java.util.UUID;
 
@@ -20,6 +23,10 @@ public class EcomServiceImpl implements EcomService {
 
     private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentRequestMapper paymentRequestMapper;
+    private final PaymentCacheService paymentCacheService;
+    private final CacheInspectorUtil cacheInspectorUtil;
+
+
 
     @Override
     public ResponseEntity<ApiResponse<PaymentRequestDTO>> checkout(PaymentRequestDTO paymentRequestDTO) {
@@ -31,10 +38,13 @@ public class EcomServiceImpl implements EcomService {
 
             paymentRequest.setRefId(UUID.randomUUID().toString());
 
+            paymentCacheService.cachePaymentRequest(paymentRequest);
 
-            PaymentRequest savedPaymentRequest = paymentRequestRepository.save(paymentRequest);
+            cacheInspectorUtil.inspectPendingPaymentsCache();
 
-            PaymentRequestDTO paymentResponseDTO = paymentRequestMapper.toDTO(savedPaymentRequest);
+
+
+            PaymentRequestDTO paymentResponseDTO = paymentRequestMapper.toDTO(paymentRequest);
 
             String redirectURL = "/api/auth/login/"+paymentResponseDTO.getRefId();
             paymentResponseDTO.setRedirectURL(redirectURL);
@@ -50,4 +60,5 @@ public class EcomServiceImpl implements EcomService {
             throw new IllegalArgumentException("Invalid application value: " + e.getMessage());
         }
     }
+
 }

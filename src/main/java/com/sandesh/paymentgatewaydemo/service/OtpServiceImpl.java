@@ -1,19 +1,19 @@
 
 package com.sandesh.paymentgatewaydemo.service;
 
-import com.sandesh.paymentgatewaydemo.entity.Otp;
+
+import com.sandesh.paymentgatewaydemo.entity.OtpEntry;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.entity.User;
 import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidAccessException;
 import com.sandesh.paymentgatewaydemo.exception.InvalidOTPException;
-import com.sandesh.paymentgatewaydemo.repository.OtpRepository;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
+import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
 import lombok.AllArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Optional;
+
 
 
 @Service
@@ -30,10 +30,11 @@ import java.util.Optional;
 public class OtpServiceImpl implements OtpService {
 
     private final JavaMailSender mailSender;
-    private final OtpRepository otpRepository;
     private final UserRepository userRepository;
     private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentRequestAccessValidator paymentRequestAccessValidator;
+    private final PaymentCacheService paymentCacheService;
+    private final CacheInspectorUtil cacheInspectorUtil;
 
 
     public ResponseEntity<ApiResponse<String>> validateAccess( String refId) {
@@ -42,12 +43,14 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        Optional<PaymentRequest> optionalPaymentRequest = paymentRequestRepository.findByRefId(refId);
-        if (!optionalPaymentRequest.isPresent()) {
+        PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
+
+
+        if (paymentRequest==null) {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        PaymentRequest paymentRequest = optionalPaymentRequest.get();
+
         if (!paymentRequest.getStatus().equals(Status.PENDING)) {
 
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
@@ -75,13 +78,14 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        Optional<PaymentRequest> optionalPaymentRequest = paymentRequestRepository.findByRefId(refId);
-        if (!optionalPaymentRequest.isPresent()) {
-            throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
 
+
+        PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
+
+        if(paymentRequest==null){
+            throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        PaymentRequest paymentRequest = optionalPaymentRequest.get();
         if (!paymentRequest.getStatus().equals(Status.PENDING)) {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
@@ -98,26 +102,18 @@ public class OtpServiceImpl implements OtpService {
 
         String otpValue = generateOtp();
 
+        // Clear any existing OTP for the user in the cache
+        paymentCacheService.clearOtpByUserEmail(email);
 
-        Otp otp = new Otp();
-        otp.setOtp(otpValue);
-        otp.setHasExpired(false);
-        otp.setUser(user);
-        otp.setPaymentRequest(paymentRequest);
-
-
-        //delete expired past OTP of the user
-        Optional<Otp> existingOTP= otpRepository.findByUserEmail(email);
-        existingOTP.ifPresent(otpRepository::delete);
+        // Cache the new OTP
+        paymentCacheService.cacheOtp(refId, otpValue);
+        cacheInspectorUtil.inspectOtpsCache();
 
 
 
-        try {
-            otpRepository.save(otp);
-        }catch (DataIntegrityViolationException exception){
-            throw new DataIntegrityViolationException("OTP already sent to the requested email address");
-        }
-        //send otp to email
+
+
+
         sendEmail(email, otpValue);
 
         ApiResponse<Void> response = new ApiResponse<>(
@@ -135,13 +131,14 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-        Optional<PaymentRequest> optionalPaymentRequest = paymentRequestRepository.findByRefId(refId);
-        if (!optionalPaymentRequest.isPresent()) {
+
+        PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
+
+        if(paymentRequest==null){
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
 
         }
 
-        PaymentRequest paymentRequest = optionalPaymentRequest.get();
         if (!paymentRequest.getStatus().equals(Status.PENDING)) {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
@@ -159,24 +156,29 @@ public class OtpServiceImpl implements OtpService {
         paymentRequestAccessValidator.isPaymentRequestAccessValid(email,refId);
 
 
-        Otp storedOtp = otpRepository.findByUserEmailAndPaymentRequestRefIdAndHasExpiredFalse(email,refId)
-                .orElseThrow(() -> new IllegalArgumentException("No valid OTP found for email: " + email));
 
-
-        if (storedOtp.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
-
-            otpRepository.delete(storedOtp);
-            throw new IllegalArgumentException("OTP has expired for email: " + email);
+        OtpEntry otpEntry = paymentCacheService.getOtpEntry(refId);
+        if (otpEntry == null) {
+            throw new IllegalArgumentException("No valid OTP found for refId: " + refId);
         }
 
-        if (!storedOtp.getOtp().equals(otp)) {
-            throw new IllegalArgumentException("Invalid OTP for email: " + email);
+        if (otpEntry.getCreatedAt().plusMinutes(5).isBefore(LocalDateTime.now())) {
+            paymentCacheService.clearOtp(refId);
+            throw new IllegalArgumentException("OTP has expired");
         }
 
-        otpRepository.delete(storedOtp);
+        if (!otpEntry.getOtp().equals(otp)) {
+            throw new IllegalArgumentException("Invalid OTP");
+        }
+
+        paymentCacheService.clearOtp(refId);
+        cacheInspectorUtil.inspectOtpsCache();
+
 
 
         paymentRequest.setStatus(Status.AUTHENTICATED);
+
+
         paymentRequestRepository.save(paymentRequest);
 
 
