@@ -19,8 +19,8 @@ import java.util.Optional;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService{
 
-    UserRepository userRepository;
-    UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     public ResponseEntity<ApiResponse<UserDTO>> getUserDetails(){
 

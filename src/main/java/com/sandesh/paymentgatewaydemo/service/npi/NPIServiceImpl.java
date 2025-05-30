@@ -20,14 +20,15 @@ import java.util.Map;
 
 @Service
 @AllArgsConstructor
+
 public class NPIServiceImpl implements NPIService {
 
-     private UserRepository userRepository;
-     private PaymentRequestRepository paymentRequestRepository;
-     private PaymentRequestAccessValidator paymentRequestAccessValidator;
+     private final UserRepository userRepository;
+     private final PaymentRequestRepository paymentRequestRepository;
+     private final PaymentRequestAccessValidator paymentRequestAccessValidator;
 
      @Override
-     @Transactional
+     @Transactional(noRollbackFor = InvalidTransactionRequestException.class)
      public ResponseEntity<ApiResponse<Map<String, String>>> validateTransaction(String refId){
           String email = EmailExtractorUtil.getEmailFromJwt();
 
@@ -49,19 +50,28 @@ public class NPIServiceImpl implements NPIService {
           }
 
           if (paymentRequest.getAmount() <= 0) {
+
+               paymentRequest.setDebitStatus(Status.FAILED);
+               paymentRequest.setCreditStatus(Status.FAILED);
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
                throw new InvalidTransactionRequestException("Invalid Amount: Rs." + paymentRequest.getAmount());
           }
 
+
+          //debit process
+
           double newUserBalance = user.getBalance() - paymentRequest.getAmount();
           if (newUserBalance < 0) {
+
+               paymentRequest.setDebitStatus(Status.FAILED);
+               paymentRequest.setCreditStatus(Status.FAILED);
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
                throw new InvalidTransactionRequestException("Insufficient balance: Rs." + user.getBalance());
           }
 
-          paymentRequest.setStatus(Status.SUCCESS);
+//          paymentRequest.setStatus(Status.SUCCESS);
 
           user.setBalance(newUserBalance);
           userRepository.save(user);
@@ -75,7 +85,11 @@ public class NPIServiceImpl implements NPIService {
           merchant.setBalance(newMerchantBalance);
           userRepository.save(merchant);
           paymentRequest.setCreditStatus(Status.SUCCESS);
+
+          //set payment status to success
           paymentRequest.setStatus(Status.SUCCESS);
+
+          paymentRequestRepository.save(paymentRequest);
 
           Map<String, String> responseData = new HashMap<>();
 

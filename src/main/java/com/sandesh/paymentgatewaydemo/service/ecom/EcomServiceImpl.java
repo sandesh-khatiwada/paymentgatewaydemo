@@ -18,8 +18,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class EcomServiceImpl implements EcomService {
 
-    private PaymentRequestRepository paymentRequestRepository;
-    private PaymentRequestMapper paymentRequestMapper;
+    private final PaymentRequestRepository paymentRequestRepository;
+    private final PaymentRequestMapper paymentRequestMapper;
 
     @Override
     public ResponseEntity<ApiResponse<PaymentRequestDTO>> checkout(PaymentRequestDTO paymentRequestDTO) {
