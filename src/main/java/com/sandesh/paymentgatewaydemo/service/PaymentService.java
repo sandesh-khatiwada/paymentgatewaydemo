@@ -6,6 +6,6 @@ import org.springframework.http.ResponseEntity;
 
 public interface PaymentService {
 
-    ResponseEntity<ApiResponse<PaymentRequestDTO>> getPaymentRequest(String refId);
+    ResponseEntity<ApiResponse<PaymentRequestDTO>> validatePaymentRequest(String refId);
 
 }

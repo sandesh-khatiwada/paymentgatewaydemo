@@ -1,6 +1,6 @@
 package com.sandesh.paymentgatewaydemo.service;
 
-import com.sandesh.paymentgatewaydemo.dto.PaymentRequestDTO;
+
 import com.sandesh.paymentgatewaydemo.dto.UserDTO;
 import com.sandesh.paymentgatewaydemo.entity.User;
 import com.sandesh.paymentgatewaydemo.exception.InvalidAccessException;
@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+
 
 @Service
 @AllArgsConstructor

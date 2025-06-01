@@ -1,7 +1,10 @@
 package com.sandesh.paymentgatewaydemo.entity;
 
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
+@Getter
 public class OtpEntry {
     private final String otp;
     private final LocalDateTime createdAt;
@@ -11,11 +14,4 @@ public class OtpEntry {
         this.createdAt = LocalDateTime.now();
     }
 
-    public String getOtp() {
-        return otp;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
 }

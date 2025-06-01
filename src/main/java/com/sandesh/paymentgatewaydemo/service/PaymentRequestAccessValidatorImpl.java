@@ -3,7 +3,6 @@ package com.sandesh.paymentgatewaydemo.service;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.entity.User;
 import com.sandesh.paymentgatewaydemo.exception.InvalidAccessException;
-import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import java.util.Objects;
 public class PaymentRequestAccessValidatorImpl implements PaymentRequestAccessValidator {
 
     private final UserRepository userRepository;
-    private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentCacheService paymentCacheService;
 
     @Override

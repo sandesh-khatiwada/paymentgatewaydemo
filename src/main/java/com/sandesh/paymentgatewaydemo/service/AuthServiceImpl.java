@@ -3,7 +3,6 @@ package com.sandesh.paymentgatewaydemo.service;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidAccessException;
-import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import com.sandesh.paymentgatewaydemo.util.JwtUtil;
@@ -32,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PaymentCacheService paymentCacheService;
+    private final CacheInspectorUtil cacheInspectorUtil;
 
     public ResponseEntity<ApiResponse<LoginResponse>> login(LoginRequest loginRequest) {
 
@@ -46,8 +46,6 @@ public class AuthServiceImpl implements AuthService {
         if (paymentRequest == null) {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
-
-
 
         if (!paymentRequest.getStatus().equals(Status.PENDING)) {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
@@ -73,6 +71,8 @@ public class AuthServiceImpl implements AuthService {
         paymentRequest.setUser(user);
         paymentCacheService.cachePaymentRequest(paymentRequest);
 
+        cacheInspectorUtil.inspectPendingPaymentsCache();
+
 
         LoginResponse loginResponse= new LoginResponse(jwt, user.getUsername(), user.getEmail());
 
@@ -92,8 +92,6 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-
-
         PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
         if (paymentRequest == null) {
 
@@ -101,13 +99,11 @@ public class AuthServiceImpl implements AuthService {
 
         }
 
-
         if (!paymentRequest.getStatus().equals(Status.PENDING)) {
 
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
 
         }
-
 
         return ResponseEntity.ok(new ApiResponse<>(
                 HttpStatus.OK,
@@ -115,8 +111,6 @@ public class AuthServiceImpl implements AuthService {
                 null
         ));
     }
-
-
 
 
 }

@@ -6,7 +6,6 @@ import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidPaymentRequestException;
 import com.sandesh.paymentgatewaydemo.mapper.PaymentRequestMapper;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
-import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
 import lombok.AllArgsConstructor;
@@ -20,14 +19,13 @@ import org.springframework.stereotype.Service;
 public class PaymentServiceImpl implements PaymentService{
 
     private final PaymentRequestRepository paymentRequestRepository;
-    private final UserRepository userRepository;
     private final PaymentRequestMapper paymentRequestMapper;
     private final PaymentRequestAccessValidator paymentRequestAccessValidator;
     private final PaymentCacheService paymentCacheService;
 
 
     @Override
-    public ResponseEntity<ApiResponse<PaymentRequestDTO>> getPaymentRequest(String refId) {
+    public ResponseEntity<ApiResponse<PaymentRequestDTO>> validatePaymentRequest(String refId) {
 
         PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
 
@@ -57,7 +55,7 @@ public class PaymentServiceImpl implements PaymentService{
 
         ApiResponse<PaymentRequestDTO> response = new ApiResponse<>(
                 HttpStatus.OK,
-                "Payment request retrieved successfully",
+                "Payment request validated successfully",
                 responseDTO
         );
 

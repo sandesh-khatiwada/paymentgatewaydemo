@@ -78,8 +78,6 @@ public class OtpServiceImpl implements OtpService {
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 
-
-
         PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
 
         if(paymentRequest==null){
@@ -96,9 +94,7 @@ public class OtpServiceImpl implements OtpService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
 
-
         paymentRequestAccessValidator.isPaymentRequestAccessValid(email,refId);
-
 
         String otpValue = generateOtp();
 
@@ -108,11 +104,6 @@ public class OtpServiceImpl implements OtpService {
         // Cache the new OTP
         paymentCacheService.cacheOtp(refId, otpValue);
         cacheInspectorUtil.inspectOtpsCache();
-
-
-
-
-
 
         sendEmail(email, otpValue);
 

@@ -71,7 +71,6 @@ public class NPIServiceImpl implements NPIService {
                throw new InvalidTransactionRequestException("Insufficient balance: Rs." + user.getBalance());
           }
 
-//          paymentRequest.setStatus(Status.SUCCESS);
 
           user.setBalance(newUserBalance);
           userRepository.save(user);
