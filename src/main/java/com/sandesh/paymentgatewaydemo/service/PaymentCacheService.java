@@ -11,4 +11,5 @@ public interface PaymentCacheService {
      OtpEntry getOtpEntry(String refId);
      void clearOtp(String refId);
      void clearOtpByUserEmail(String email);
+     void clearPaymentRequest(String refId);
 }

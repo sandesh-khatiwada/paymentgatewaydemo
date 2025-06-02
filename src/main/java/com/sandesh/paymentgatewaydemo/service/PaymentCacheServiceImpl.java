@@ -90,4 +90,13 @@ public class PaymentCacheServiceImpl implements PaymentCacheService {
             }
         });
     }
+
+    @Override
+    public void clearPaymentRequest(String refId) {
+        Cache cache = cacheManager.getCache("pendingPayments");
+        if (cache == null) {
+            return;
+        }
+        cache.evict(refId);
+    }
 }
