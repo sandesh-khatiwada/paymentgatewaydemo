@@ -6,9 +6,7 @@ import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidTransactionRequestException;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
-import com.sandesh.paymentgatewaydemo.service.PaymentCacheService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
-import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,8 +24,7 @@ public class NPIServiceImpl implements NPIService {
 
      private final UserRepository userRepository;
      private final PaymentRequestRepository paymentRequestRepository;
-     private final PaymentCacheService paymentCacheService;
-     private final CacheInspectorUtil cacheInspectorUtil;
+
 
      @Override
      @Transactional(noRollbackFor = InvalidTransactionRequestException.class)
@@ -43,7 +40,6 @@ public class NPIServiceImpl implements NPIService {
 
 
           if(paymentRequest.getStatus().equals(Status.SUCCESS)){
-               paymentCacheService.clearPaymentRequest(refId);
                throw new InvalidTransactionRequestException("Transaction with the provided refId has already been completed");
 
           }
@@ -58,7 +54,6 @@ public class NPIServiceImpl implements NPIService {
                paymentRequest.setCreditStatus(Status.FAILED);
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
-               paymentCacheService.clearPaymentRequest(refId);
                throw new InvalidTransactionRequestException("Invalid Amount: Rs." + paymentRequest.getAmount());
           }
 
@@ -72,7 +67,6 @@ public class NPIServiceImpl implements NPIService {
                paymentRequest.setCreditStatus(Status.FAILED);
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
-               paymentCacheService.clearPaymentRequest(refId);
                throw new InvalidTransactionRequestException("Insufficient balance: Rs." + user.getBalance());
           }
 
@@ -94,9 +88,8 @@ public class NPIServiceImpl implements NPIService {
           paymentRequest.setStatus(Status.SUCCESS);
 
           paymentRequestRepository.save(paymentRequest);
-          paymentCacheService.clearPaymentRequest(refId);
 
-          cacheInspectorUtil.inspectPendingPaymentsCache();
+
 
 
           Map<String, String> responseData = new HashMap<>();

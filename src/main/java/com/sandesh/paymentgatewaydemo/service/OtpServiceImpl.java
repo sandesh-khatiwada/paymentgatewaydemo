@@ -171,8 +171,7 @@ public class OtpServiceImpl implements OtpService {
 
 
         paymentRequestRepository.save(paymentRequest);
-//        paymentCacheService.clearPaymentRequest(refId);
-//        cacheInspectorUtil.inspectPendingPaymentsCache();
+
 
 
         ApiResponse<Void> response = new ApiResponse<>(

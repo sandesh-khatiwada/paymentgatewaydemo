@@ -7,6 +7,7 @@ import com.sandesh.paymentgatewaydemo.exception.InvalidPaymentRequestException;
 import com.sandesh.paymentgatewaydemo.mapper.PaymentRequestMapper;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
+import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ public class PaymentServiceImpl implements PaymentService{
     private final PaymentRequestMapper paymentRequestMapper;
     private final PaymentRequestAccessValidator paymentRequestAccessValidator;
     private final PaymentCacheService paymentCacheService;
+    private final CacheInspectorUtil cacheInspectorUtil;
 
 
     @Override
@@ -40,18 +42,23 @@ public class PaymentServiceImpl implements PaymentService{
         if(paymentRequest.getAmount()<=0){
             paymentRequest.setStatus(Status.FAILED);
             paymentRequestRepository.save(paymentRequest);
+            paymentCacheService.clearPaymentRequest(refId);
             throw new InvalidPaymentRequestException("Invalid Amount: "+paymentRequest.getAmount());
         }
 
         if(paymentRequest.getParticular().isEmpty()){
             paymentRequest.setStatus(Status.FAILED);
             paymentRequestRepository.save(paymentRequest);
+            paymentCacheService.clearPaymentRequest(refId);
             throw new InvalidPaymentRequestException("Invalid Particular: "+paymentRequest.getParticular());
         }
 
 
         PaymentRequestDTO responseDTO = paymentRequestMapper.toDTO(paymentRequest);
 
+
+        paymentCacheService.clearPaymentRequest(refId);
+        cacheInspectorUtil.inspectPendingPaymentsCache();
 
         ApiResponse<PaymentRequestDTO> response = new ApiResponse<>(
                 HttpStatus.OK,
