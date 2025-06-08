@@ -7,7 +7,6 @@ import com.sandesh.paymentgatewaydemo.exception.InvalidTransactionRequestExcepti
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import com.sandesh.paymentgatewaydemo.service.PaymentCacheService;
-import com.sandesh.paymentgatewaydemo.service.PaymentRequestAccessValidator;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
@@ -27,15 +26,14 @@ public class NPIServiceImpl implements NPIService {
 
      private final UserRepository userRepository;
      private final PaymentRequestRepository paymentRequestRepository;
-     private final PaymentRequestAccessValidator paymentRequestAccessValidator;
      private final PaymentCacheService paymentCacheService;
+     private final CacheInspectorUtil cacheInspectorUtil;
 
      @Override
      @Transactional(noRollbackFor = InvalidTransactionRequestException.class)
      public ResponseEntity<ApiResponse<Map<String, String>>> validateTransaction(String refId){
           String email = EmailExtractorUtil.getEmailFromJwt();
 
-//          paymentRequestAccessValidator.isPaymentRequestAccessValid(email,refId);
 
           //user and paymentRequest exists for sure (verified by above method call)
           User user =userRepository.findByEmail(email).get();
@@ -97,6 +95,8 @@ public class NPIServiceImpl implements NPIService {
 
           paymentRequestRepository.save(paymentRequest);
           paymentCacheService.clearPaymentRequest(refId);
+
+          cacheInspectorUtil.inspectPendingPaymentsCache();
 
 
           Map<String, String> responseData = new HashMap<>();
