@@ -40,7 +40,7 @@ public class CacheInspectorUtil {
         nativeCache.forEach((key, value) -> {
             PaymentRequest pr = (PaymentRequest) value;
             String logMessage = String.format("Key: %s, Value: refId=%s, status=%s, userId=%s",
-                    key, pr.getRefId(), pr.getStatus(), pr.getUser() != null ? pr.getUser().getId() : "null");
+                    key, pr.getRefId(), pr.getStatus(), pr.getUserId());
             logger.info(logMessage);
             System.out.println(logMessage);
         });
