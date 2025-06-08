@@ -68,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail(), loginRequest.getUsernameOrEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        paymentRequest.setUser(user);
+        paymentRequest.setUserId(user.getId());
         paymentCacheService.cachePaymentRequest(paymentRequest);
 
         cacheInspectorUtil.inspectPendingPaymentsCache();

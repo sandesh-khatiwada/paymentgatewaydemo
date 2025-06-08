@@ -31,7 +31,7 @@ public class PaymentRequestAccessValidatorImpl implements PaymentRequestAccessVa
             throw new InvalidAccessException("Transaction request not found for refId: "+refId);
         }
 
-        if(!Objects.equals(user.getId(),paymentRequest.getUser().getId())){
+        if(!Objects.equals(user.getId(),paymentRequest.getUserId())){
             throw new InvalidAccessException("Invalid transaction reference or transaction request has been expired");
         }
 

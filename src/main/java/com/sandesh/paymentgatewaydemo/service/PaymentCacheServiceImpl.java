@@ -3,11 +3,14 @@ package com.sandesh.paymentgatewaydemo.service;
 import com.sandesh.paymentgatewaydemo.entity.OtpEntry;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 
+import com.sandesh.paymentgatewaydemo.entity.User;
+import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 
 @Service
@@ -15,6 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 public class PaymentCacheServiceImpl implements PaymentCacheService {
 
     private final CacheManager cacheManager;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -85,8 +89,11 @@ public class PaymentCacheServiceImpl implements PaymentCacheService {
 
         paymentNativeCache.forEach((key, value) -> {
             PaymentRequest pr = (PaymentRequest) value;
-            if (pr.getUser() != null && email.equals(pr.getUser().getEmail())) {
-                nativeCache.remove(key);
+            if (pr.getUserId() != null) {
+                Optional<User> userOpt = userRepository.findById(pr.getUserId());
+                if (userOpt.isPresent() && email.equals(userOpt.get().getEmail())) {
+                    nativeCache.remove(key);
+                }
             }
         });
     }

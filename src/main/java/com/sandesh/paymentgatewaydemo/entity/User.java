@@ -1,35 +1,28 @@
 package com.sandesh.paymentgatewaydemo.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user")
+@Table("user")
 public class User {
 
-    @Column(name = "user_id")
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column("user_id")
     private Long id;
 
-    @Column(name = "username" , nullable = false,unique = true)
     private String username;
 
-    @Column(name="email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "balance")
     private Double balance;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<PaymentRequest> paymentRequests = new ArrayList<>();
 }
