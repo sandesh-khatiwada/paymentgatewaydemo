@@ -54,4 +54,5 @@ public enum AppId {
         AppId appId = fromId(id);
         return appId.getName();
     }
+
 }
