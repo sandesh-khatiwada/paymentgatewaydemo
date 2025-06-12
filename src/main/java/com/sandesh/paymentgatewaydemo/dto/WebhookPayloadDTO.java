@@ -16,19 +16,12 @@ import java.time.LocalDateTime;
 public class WebhookPayloadDTO {
 
     private String eventType;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime timeStamp;
-
+    private String timeStamp;
     private AppId appId;
-
     private String refId;
-
     private Double amount;
-
     private Status status;
-
-
-    private String signature;  // HMAC-SHA256 signature for security
+    private String statusMessage;
+    private String signature;  // HMAC-SHA256
 
 }

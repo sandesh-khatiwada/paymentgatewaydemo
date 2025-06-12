@@ -175,6 +175,7 @@ public class GlobalExceptionHandler {
     //  RuntimeException
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
+
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.NOT_FOUND,
                 "E404",

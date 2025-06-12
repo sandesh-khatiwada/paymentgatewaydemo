@@ -1,5 +1,6 @@
 package com.sandesh.paymentgatewaydemo.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sandesh.paymentgatewaydemo.enums.AppId;
 import lombok.AllArgsConstructor;
 import lombok.Data;

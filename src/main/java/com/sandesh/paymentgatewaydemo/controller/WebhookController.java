@@ -1,5 +1,6 @@
 package com.sandesh.paymentgatewaydemo.controller;
 
+import com.sandesh.paymentgatewaydemo.dto.WebhookConfigDTO;
 import com.sandesh.paymentgatewaydemo.dto.WebhookConfigRequest;
 import com.sandesh.paymentgatewaydemo.entity.WebhookConfig;
 import com.sandesh.paymentgatewaydemo.enums.AppId;
@@ -17,13 +18,8 @@ public class WebhookController {
     private WebhookService webhookService;
 
     @PostMapping("")
-    public ResponseEntity<ApiResponse<WebhookConfig>> registerWebhook(@RequestBody WebhookConfigRequest request, @RequestHeader String appId){
+    public ResponseEntity<ApiResponse<WebhookConfigDTO>> registerWebhook(@RequestBody WebhookConfigRequest request, @RequestHeader String appId){
         return webhookService.registerWebhook(request,appId);
     }
-
-
-
-
-
 
 }
