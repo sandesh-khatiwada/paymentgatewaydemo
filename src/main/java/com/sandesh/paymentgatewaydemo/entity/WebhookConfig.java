@@ -1,6 +1,6 @@
 package com.sandesh.paymentgatewaydemo.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+
 import com.sandesh.paymentgatewaydemo.enums.AppId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 
 @Table("webhook_config")

@@ -45,7 +45,6 @@ public class WebhookServiceImpl implements WebhookService{
             throw new IllegalArgumentException("Webhook URL and event type are required");
         }
 
-
         validateUrl(request.getUrl());
 
         AppId applicationId = AppId.fromName(appId);
@@ -89,6 +88,18 @@ public class WebhookServiceImpl implements WebhookService{
 
     }
 
+    @Override
+    public void scheduleRetry(WebhookDeliveryLog log) {
+        int maxAttempts = 5;
+        if (log.getAttemptCount() < maxAttempts) {
+            // Exponential: 1 min, 2 min, 4 min, 8 min, 16 min
+            long delayMinutes = (long) Math.pow(2, log.getAttemptCount());
+            log.setNextRetryAt(LocalDateTime.now().plusMinutes(delayMinutes));
+            webhookDeliveryLogRepository.save(log);
+        }
+    }
+
+
     private void sendWebhook(WebhookConfig config, PaymentRequest paymentRequest, String eventType, String statusMessage){
 
         String payloadJson="";
@@ -102,7 +113,6 @@ public class WebhookServiceImpl implements WebhookService{
         HttpEntity<String> request = new HttpEntity<>(payloadJson, headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(config.getUrl(), request, String.class);
-
 
         // Log delivery
         WebhookDeliveryLog log = new WebhookDeliveryLog();
@@ -155,15 +165,6 @@ public class WebhookServiceImpl implements WebhookService{
         return webhookPayloadDTO;
     }
 
-    public void scheduleRetry(WebhookDeliveryLog log) {
-        int maxAttempts = 5;
-        if (log.getAttemptCount() < maxAttempts) {
-            // Exponential: 1 min, 2 min, 4 min, 8 min, 16 min
-            long delayMinutes = (long) Math.pow(2, log.getAttemptCount());
-            log.setNextRetryAt(LocalDateTime.now().plusMinutes(delayMinutes));
-            webhookDeliveryLogRepository.save(log);
-        }
-    }
 
 
     private void validateUrl(String url) {

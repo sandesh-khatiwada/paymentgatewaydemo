@@ -2,8 +2,6 @@ package com.sandesh.paymentgatewaydemo.controller;
 
 import com.sandesh.paymentgatewaydemo.dto.WebhookConfigDTO;
 import com.sandesh.paymentgatewaydemo.dto.WebhookConfigRequest;
-import com.sandesh.paymentgatewaydemo.entity.WebhookConfig;
-import com.sandesh.paymentgatewaydemo.enums.AppId;
 import com.sandesh.paymentgatewaydemo.service.webhook.WebhookService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import lombok.AllArgsConstructor;
