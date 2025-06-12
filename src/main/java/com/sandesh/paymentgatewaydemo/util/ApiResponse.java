@@ -1,5 +1,6 @@
 package com.sandesh.paymentgatewaydemo.util;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,9 @@ public class ApiResponse<T> {
     private String message;
     private T data;
     private List<String> errors;
-    private LocalDateTime timestamp;
+
+
+    private String timestamp;
 
     // Success response constructor
     public ApiResponse(HttpStatus status, String message, T data) {
@@ -30,7 +33,7 @@ public class ApiResponse<T> {
         this.message = message;
         this.data = data;
         this.errors = null;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().toString();
     }
 
     // Success response without data
@@ -41,7 +44,7 @@ public class ApiResponse<T> {
         this.message = message;
         this.data = null;
         this.errors = null;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().toString();
     }
 
 
@@ -54,7 +57,7 @@ public class ApiResponse<T> {
         this.message = message;
         this.data = null;
         this.errors = errors;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().toString();
     }
 
     // Response with redirection URL for failure
@@ -69,7 +72,7 @@ public class ApiResponse<T> {
         redirectData.put("failureURL", failureURL);
         this.data = (T) redirectData;
         this.errors = errors;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().toString();
     }
 
     // Response with redirection URL for success
@@ -83,6 +86,6 @@ public class ApiResponse<T> {
         redirectData.put("failureURL", failureURL);
         this.data = (T) redirectData;
         this.errors = null;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().toString();
     }
 }

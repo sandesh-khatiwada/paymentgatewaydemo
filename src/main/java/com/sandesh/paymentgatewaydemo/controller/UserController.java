@@ -1,7 +1,7 @@
 package com.sandesh.paymentgatewaydemo.controller;
 
 import com.sandesh.paymentgatewaydemo.dto.UserDTO;
-import com.sandesh.paymentgatewaydemo.service.UserService;
+import com.sandesh.paymentgatewaydemo.service.user.UserService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

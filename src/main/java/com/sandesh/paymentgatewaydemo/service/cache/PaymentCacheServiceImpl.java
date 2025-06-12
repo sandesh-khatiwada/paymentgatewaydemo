@@ -1,4 +1,4 @@
-package com.sandesh.paymentgatewaydemo.service;
+package com.sandesh.paymentgatewaydemo.service.cache;
 
 import com.sandesh.paymentgatewaydemo.entity.OtpEntry;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;

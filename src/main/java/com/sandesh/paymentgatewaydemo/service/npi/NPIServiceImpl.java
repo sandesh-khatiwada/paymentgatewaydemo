@@ -6,6 +6,7 @@ import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.exception.InvalidTransactionRequestException;
 import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
+import com.sandesh.paymentgatewaydemo.service.webhook.WebhookService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import com.sandesh.paymentgatewaydemo.util.EmailExtractorUtil;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,7 @@ public class NPIServiceImpl implements NPIService {
 
      private final UserRepository userRepository;
      private final PaymentRequestRepository paymentRequestRepository;
+     private final WebhookService webhookService;
 
 
      @Override
@@ -40,11 +42,13 @@ public class NPIServiceImpl implements NPIService {
 
 
           if(paymentRequest.getStatus().equals(Status.SUCCESS)){
+               webhookService.triggerWebhook(paymentRequest,"payments.failed", "Transaction already completed");
                throw new InvalidTransactionRequestException("Transaction with the provided refId has already been completed");
 
           }
 
           if(!paymentRequest.getStatus().equals(Status.AUTHENTICATED)){
+               webhookService.triggerWebhook(paymentRequest,"payments.failed", "Authentication missing");
                throw new InvalidTransactionRequestException("Authentication Required");
           }
 
@@ -54,6 +58,7 @@ public class NPIServiceImpl implements NPIService {
                paymentRequest.setCreditStatus(Status.FAILED);
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
+               webhookService.triggerWebhook(paymentRequest,"payments.failed", "Invalid amount: Rs."+paymentRequest.getAmount());
                throw new InvalidTransactionRequestException("Invalid Amount: Rs." + paymentRequest.getAmount());
           }
 
@@ -67,6 +72,7 @@ public class NPIServiceImpl implements NPIService {
                paymentRequest.setCreditStatus(Status.FAILED);
                paymentRequest.setStatus(Status.FAILED);
                paymentRequestRepository.save(paymentRequest);
+               webhookService.triggerWebhook(paymentRequest,"payments.failed","Insufficient balance");
                throw new InvalidTransactionRequestException("Insufficient balance: Rs." + user.getBalance());
           }
 
@@ -87,7 +93,11 @@ public class NPIServiceImpl implements NPIService {
           //set payment status to success
           paymentRequest.setStatus(Status.SUCCESS);
 
-          paymentRequestRepository.save(paymentRequest);
+          PaymentRequest savedPayment = paymentRequestRepository.save(paymentRequest);
+
+
+
+          webhookService.triggerWebhook(savedPayment,"payments.success", "Transaction completed succesfully");
 
 
 

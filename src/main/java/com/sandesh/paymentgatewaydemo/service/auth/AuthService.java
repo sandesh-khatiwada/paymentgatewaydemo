@@ -1,4 +1,4 @@
-package com.sandesh.paymentgatewaydemo.service;
+package com.sandesh.paymentgatewaydemo.service.auth;
 
 import com.sandesh.paymentgatewaydemo.dto.LoginRequest;
 import com.sandesh.paymentgatewaydemo.dto.LoginResponse;

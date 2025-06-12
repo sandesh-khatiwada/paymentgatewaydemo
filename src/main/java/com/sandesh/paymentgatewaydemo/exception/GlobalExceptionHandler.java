@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -140,6 +141,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMissingRequestHeaderException(MissingRequestHeaderException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST,
+                "E007",
+                "Missing request header",
+                Collections.singletonList(ex.getHeaderName()+" is required.")
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+
+
 
     @ExceptionHandler(UnverifiedOtpException.class)
     public ResponseEntity<ApiResponse<Object>> handleUnverifiedOtpException(UnverifiedOtpException ex) {
@@ -161,6 +175,7 @@ public class GlobalExceptionHandler {
     //  RuntimeException
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
+
         ApiResponse<Object> response = new ApiResponse<>(
                 HttpStatus.NOT_FOUND,
                 "E404",
