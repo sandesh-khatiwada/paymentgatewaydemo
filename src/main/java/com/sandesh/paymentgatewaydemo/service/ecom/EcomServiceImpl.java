@@ -5,7 +5,7 @@ import com.sandesh.paymentgatewaydemo.dto.PaymentRequestDTO;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.enums.Status;
 import com.sandesh.paymentgatewaydemo.mapper.PaymentRequestMapper;
-import com.sandesh.paymentgatewaydemo.service.PaymentCacheService;
+import com.sandesh.paymentgatewaydemo.service.cache.PaymentCacheService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import com.sandesh.paymentgatewaydemo.util.CacheInspectorUtil;
 import lombok.AllArgsConstructor;

@@ -35,7 +35,7 @@ import java.util.UUID;
 public class WebhookServiceImpl implements WebhookService{
     private WebhookConfigRepository webhookConfigRepository;
     private WebhookDeliveryLogRepository webhookDeliveryLogRepository;
-    private ObjectMapper objectMapper;
+//    private ObjectMapper objectMapper;
     private RestTemplate restTemplate;
 
 
@@ -93,19 +93,19 @@ public class WebhookServiceImpl implements WebhookService{
     }
 
     @Override
-    public void triggerWebhook(PaymentRequest paymentRequest, String eventType){
+    public void triggerWebhook(PaymentRequest paymentRequest, String eventType, ObjectMapper objectMapper){
         WebhookConfig config = webhookConfigRepository.findByAppIdAndEnabledTrue(paymentRequest.getAppId());
 
         if(config.getEvents().contains(eventType)){
-            sendWebhook(config,paymentRequest,eventType);
+            sendWebhook(config,paymentRequest,eventType, objectMapper);
         }
 
 
     }
 
-    private void sendWebhook(WebhookConfig config, PaymentRequest paymentRequest, String eventType){
+    private void sendWebhook(WebhookConfig config, PaymentRequest paymentRequest, String eventType, ObjectMapper objectMapper){
         try{
-        WebhookPayloadDTO webhookPayloadDTO= buildPayload(paymentRequest, eventType, config.getSecretKey());
+        WebhookPayloadDTO webhookPayloadDTO= buildPayload(paymentRequest, eventType, config.getSecretKey(), objectMapper);
 
         String payloadJson = objectMapper.writeValueAsString(webhookPayloadDTO);
         HttpHeaders headers = new HttpHeaders();
@@ -146,17 +146,17 @@ public class WebhookServiceImpl implements WebhookService{
     }
 
 
-    private WebhookPayloadDTO buildPayload(PaymentRequest paymentRequest, String eventType, String secretKey){
+    private WebhookPayloadDTO buildPayload(PaymentRequest paymentRequest, String eventType, String secretKey, ObjectMapper objectMapper){
         WebhookPayloadDTO webhookPayloadDTO= new WebhookPayloadDTO();
 
         webhookPayloadDTO.setAppId(paymentRequest.getAppId());
         webhookPayloadDTO.setAmount(paymentRequest.getAmount());
         webhookPayloadDTO.setRefId(paymentRequest.getRefId());
         webhookPayloadDTO.setStatus(paymentRequest.getStatus());
-        webhookPayloadDTO.setTimeStamp(LocalDateTime.now().toString());
+        webhookPayloadDTO.setTimeStamp(LocalDateTime.now());
         webhookPayloadDTO.setEventType(eventType);
 
-        String signature = generateSignature(webhookPayloadDTO, secretKey);
+        String signature = generateSignature(webhookPayloadDTO, secretKey, objectMapper);
         webhookPayloadDTO.setSignature(signature);
 
         return webhookPayloadDTO;
@@ -167,7 +167,7 @@ public class WebhookServiceImpl implements WebhookService{
         if (log.getAttemptCount() < maxAttempts) {
             // Exponential backoff: 1 min, 2 min, 4 min, 8 min, 16 min
             long delayMinutes = (long) Math.pow(2, log.getAttemptCount());
-            log.setNextRetryAt(LocalDateTime.now().plusMinutes(delayMinutes));
+            log.setNextRetryAt(LocalDateTime.now());
             webhookDeliveryLogRepository.save(log);
         }
     }
@@ -187,7 +187,7 @@ public class WebhookServiceImpl implements WebhookService{
         return UUID.randomUUID().toString();
     }
 
-    private String generateSignature(WebhookPayloadDTO payload, String secretKey) {
+    private String generateSignature(WebhookPayloadDTO payload, String secretKey, ObjectMapper objectMapper) {
         try {
             String data = objectMapper.writeValueAsString(payload);
             Mac mac = Mac.getInstance("HmacSHA256");

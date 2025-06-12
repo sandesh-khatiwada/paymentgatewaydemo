@@ -1,5 +1,6 @@
 package com.sandesh.paymentgatewaydemo.util;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ public class ApiResponse<T> {
     private String message;
     private T data;
     private List<String> errors;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
 
     // Success response constructor

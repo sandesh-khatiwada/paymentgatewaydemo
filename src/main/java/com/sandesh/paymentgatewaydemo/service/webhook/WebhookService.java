@@ -1,22 +1,21 @@
 package com.sandesh.paymentgatewaydemo.service.webhook;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sandesh.paymentgatewaydemo.dto.WebhookConfigRequest;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.entity.WebhookConfig;
 import com.sandesh.paymentgatewaydemo.enums.AppId;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
-import java.util.Map;
+
+
 
 public interface WebhookService {
 
     ResponseEntity<ApiResponse<WebhookConfig>> registerWebhook(WebhookConfigRequest request, String appId);
     ResponseEntity<ApiResponse<WebhookConfig>> getWebhookByAppId(AppId appId);
 
-    void triggerWebhook(PaymentRequest paymentRequest, String eventType);
+    void triggerWebhook(PaymentRequest paymentRequest, String eventType, ObjectMapper objectMapper);
 
 }

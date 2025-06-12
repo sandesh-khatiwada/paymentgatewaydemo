@@ -3,7 +3,7 @@ package com.sandesh.paymentgatewaydemo.controller;
 
 import com.sandesh.paymentgatewaydemo.dto.LoginRequest;
 import com.sandesh.paymentgatewaydemo.dto.LoginResponse;
-import com.sandesh.paymentgatewaydemo.service.AuthService;
+import com.sandesh.paymentgatewaydemo.service.auth.AuthService;
 import com.sandesh.paymentgatewaydemo.util.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
