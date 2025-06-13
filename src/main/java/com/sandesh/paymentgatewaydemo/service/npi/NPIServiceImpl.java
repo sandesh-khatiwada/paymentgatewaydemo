@@ -97,7 +97,7 @@ public class NPIServiceImpl implements NPIService {
 
 
 
-          webhookService.triggerWebhook(savedPayment,"payments.success", "Transaction completed succesfully");
+          webhookService.triggerWebhook(savedPayment,"payments.success", "Payment processed succesfully");
 
 
 

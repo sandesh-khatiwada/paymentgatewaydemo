@@ -33,12 +33,15 @@ public class PaymentServiceImpl implements PaymentService{
         PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
 
         if(paymentRequest==null){
-            throw new IllegalArgumentException("Payment request not found for refId : "+refId);
+            paymentRequest = paymentRequestRepository.findByRefId(refId).orElseThrow(()-> new IllegalArgumentException("Payment request not found for refId : "+refId));
+
         }
 
         String userEmail = EmailExtractorUtil.getEmailFromJwt();
 
         paymentRequestAccessValidator.isPaymentRequestAccessValid(userEmail,refId);
+
+
 
         if(paymentRequest.getAmount()<=0){
             paymentRequest.setStatus(Status.FAILED);
