@@ -3,6 +3,7 @@ package com.sandesh.paymentgatewaydemo.service.payment;
 import com.sandesh.paymentgatewaydemo.entity.PaymentRequest;
 import com.sandesh.paymentgatewaydemo.entity.User;
 import com.sandesh.paymentgatewaydemo.exception.InvalidAccessException;
+import com.sandesh.paymentgatewaydemo.repository.PaymentRequestRepository;
 import com.sandesh.paymentgatewaydemo.repository.UserRepository;
 import com.sandesh.paymentgatewaydemo.service.cache.PaymentCacheService;
 import lombok.AllArgsConstructor;
@@ -19,17 +20,17 @@ public class PaymentRequestAccessValidatorImpl implements PaymentRequestAccessVa
 
     private final UserRepository userRepository;
     private final PaymentCacheService paymentCacheService;
+    private final PaymentRequestRepository paymentRequestRepository;
 
     @Override
     public boolean isPaymentRequestAccessValid(String email, String refId){
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
 
-
         PaymentRequest paymentRequest = paymentCacheService.getPendingPayment(refId);
 
         if(paymentRequest==null){
-            throw new InvalidAccessException("Transaction request not found for refId: "+refId);
+            paymentRequest = paymentRequestRepository.findByRefId(refId).orElseThrow(()->new InvalidAccessException("Transaction request not found for refId: "+refId));
         }
 
         if(!Objects.equals(user.getId(),paymentRequest.getUserId())){
