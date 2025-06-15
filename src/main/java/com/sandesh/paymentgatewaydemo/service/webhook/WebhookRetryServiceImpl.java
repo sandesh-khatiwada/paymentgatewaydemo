@@ -32,8 +32,6 @@ public class WebhookRetryServiceImpl implements WebhookRetryService{
     private  final Logger logger = LoggerFactory.getLogger(WebhookRetryServiceImpl.class);
 
 
-
-
     @Override
     @Scheduled(fixedRate = 60000) // Runs every minute
 

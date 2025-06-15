@@ -34,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final PaymentCacheService paymentCacheService;
     private final CacheInspectorUtil cacheInspectorUtil;
 
+    @Override
     public ResponseEntity<ApiResponse<LoginResponse>> login(LoginRequest loginRequest) {
 
         String refId = loginRequest.getRefId();
@@ -92,6 +93,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+    @Override
     public ResponseEntity<ApiResponse<String>> validateAccess( String refId) {
         // Validate refId and transaction
         if(refId.isEmpty()){
